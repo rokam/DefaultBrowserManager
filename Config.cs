@@ -201,7 +201,11 @@ namespace DefaultBrowserManager
             foreach (string protocol in protocols)
             {
                 RegistryKey tmp = key1.CreateSubKey(protocol).CreateSubKey("UserChoice");
-                key2.DeleteSubKeyTree(protocol);
+                try
+                {
+                    key2.DeleteSubKeyTree(protocol);
+                }
+                catch { }
                 key2.CreateSubKey(protocol).CreateSubKey("DefaultIcon").SetValue(null, Path + ",0");
                 key2.CreateSubKey(protocol).CreateSubKey("shell").CreateSubKey("open").CreateSubKey("command").SetValue(null, "\"" + Path + "\" \"%1\"");
                 tmp.SetValue("Progid", "DEFAULTBM");
