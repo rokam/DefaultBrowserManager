@@ -46,7 +46,7 @@ namespace DefaultBrowserManager
             {
                 Default.Add(k, browsers.Find(x => x.ProgID == p.GetValue(k).ToString()));
             }
-            RegistryKey r = key.OpenSubKey("Regras");
+            RegistryKey r = key.CreateSubKey("Regras");
             foreach (string process in r.GetSubKeyNames())
             {
                 RegistryKey tmp = r.OpenSubKey(process);
