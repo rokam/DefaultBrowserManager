@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Windows.Forms;
 using DefaultBrowserManager.Helper;
 using DefaultBrowserManager.Model;
 using DefaultBrowserManager.Util;
@@ -18,12 +19,14 @@ namespace DefaultBrowserManager
     {
         public static Dictionary<string, Browser> Default = new Dictionary<string, Browser>();
         private static List<NavigationRule> Rules = new List<NavigationRule>();
+        private static string Path = null;
 
         /// <summary>
         /// Load all configs into memory
         /// </summary>
         public static void Initialize()
         {
+            Path = Application.ExecutablePath;
             List<Browser> browsers = BrowserHelper.FindBrowsers();
             RegistryKey key = Registry.CurrentUser.CreateSubKey("SOFTWARE");
             key = key.CreateSubKey("DefaultBrowserManager");
@@ -37,6 +40,8 @@ namespace DefaultBrowserManager
                         p.SetValue(protocol, defaultBrowsers[protocol].ProgID);
                 }
             }
+            RegisterApplication();
+            SetAsDefaultBrowser(null);
             foreach (string k in p.GetValueNames())
             {
                 Default.Add(k, browsers.Find(x => x.ProgID == p.GetValue(k).ToString()));
@@ -50,6 +55,30 @@ namespace DefaultBrowserManager
                     Rules.Add(new NavigationRule { Process = process, Protocol = protocol, Browser = browsers.Find(x => x.ProgID == tmp.GetValue(protocol).ToString()) });
                 }
             }
+        }
+
+        /// <summary>
+        /// Register application Progid as set as a Browser
+        /// </summary>
+        private static void RegisterApplication()
+        {
+            try
+            {
+                RegistryKey k = Registry.LocalMachine.CreateSubKey("SOFTWARE").CreateSubKey("RegisteredApplications");
+                k.SetValue("DefaultBrowserManager", "Software\\Clients\\StartMenuInternet\\DefaultBrowserManager\\Capabilities");
+                k = Registry.LocalMachine.CreateSubKey("SOFTWARE").CreateSubKey("Clients").CreateSubKey("StartMenuInternet").CreateSubKey("DefaultBrowserManager");
+                k.SetValue(null, "DefaultBrowserManager");
+                RegistryKey tmp = k.CreateSubKey("DefaultIcon");
+                tmp.SetValue(null, Path+",0");
+                tmp = k.CreateSubKey("shell").CreateSubKey("open").CreateSubKey("command");
+                tmp.SetValue(null, Path);
+                tmp = k.CreateSubKey("Capabilities").CreateSubKey("URLAssociations");
+                tmp.SetValue("ftp", "DEFAULTBM");
+                tmp.SetValue("http", "DEFAULTBM");
+                tmp.SetValue("https", "DEFAULTBM");
+                tmp.SetValue("mailto", "DEFAULTBM");
+            }
+            catch { }
         }
 
         /// <summary>
@@ -164,6 +193,19 @@ namespace DefaultBrowserManager
         /// <returns>If the operation is successfull</returns>
         public static bool SetAsDefaultBrowser(string[] protocols)
         {
+            
+            if (protocols == null || protocols.Length == 0)
+                protocols = new string[] { "ftp", "http", "https", "mailto" };
+            RegistryKey key1 = Registry.CurrentUser.CreateSubKey("SOFTWARE\\Microsoft\\Windows\\Shell\\Associations\\UrlAssociations");
+            RegistryKey key2 = Registry.CurrentUser.CreateSubKey("SOFTWARE\\classes");
+            foreach (string protocol in protocols)
+            {
+                RegistryKey tmp = key1.CreateSubKey(protocol).CreateSubKey("UserChoice");
+                key2.DeleteSubKeyTree(protocol);
+                key2.CreateSubKey(protocol).CreateSubKey("DefaultIcon").SetValue(null, Path + ",0");
+                key2.CreateSubKey(protocol).CreateSubKey("shell").CreateSubKey("open").CreateSubKey("command").SetValue(null, "\"" + Path + "\" \"%1\"");
+                tmp.SetValue("Progid", "DEFAULTBM");
+            }
             return true;
         }
 

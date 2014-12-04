@@ -8,10 +8,17 @@ using Microsoft.Win32;
 
 namespace DefaultBrowserManager.Helper
 {
+    /// <summary>
+    /// Static Helper class to detect and load browsers into memory.
+    /// </summary>
     public class BrowserHelper
     {
         private static List<Browser> Browsers = null;
 
+        /// <summary>
+        /// Discover all installed browsers
+        /// </summary>
+        /// <returns>List of browsers</returns>
         public static List<Browser> FindBrowsers()
         {
             if (Browsers == null)
@@ -46,9 +53,12 @@ namespace DefaultBrowserManager.Helper
                             }
                         }
                         catch { }
-                        Browser n = new Browser(name, command, icon, progid);
-                        n.Protocols.AddRange(protocols);
-                        browsers.Add(n);
+                        if (progid != "DEFAULTBM")
+                        {
+                            Browser n = new Browser(name, command, icon, progid);
+                            n.Protocols.AddRange(protocols);
+                            browsers.Add(n);
+                        }
                     }
                 }
                 catch { }
@@ -57,6 +67,10 @@ namespace DefaultBrowserManager.Helper
             return Browsers;
         }
 
+        /// <summary>
+        /// Discover the default browsers.
+        /// </summary>
+        /// <returns></returns>
         public static Dictionary<string, Browser> FindDefaultBrowsers()
         {
             Dictionary<string, Browser> browsers = new Dictionary<string, Browser>();

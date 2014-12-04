@@ -15,6 +15,10 @@ namespace DefaultBrowserManager.Util
         [DllImport("user32.dll", SetLastError = true)]
         static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
 
+        /// <summary>
+        /// Get Foreground Window Process
+        /// </summary>
+        /// <returns></returns>
         public static Process GetForegroundWindowProcess()
         {
             uint pid = 0;

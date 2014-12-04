@@ -22,7 +22,7 @@ namespace DefaultBrowserManager
                     case "--help":
                     case "-h":
                         StringBuilder sb = new StringBuilder();
-                        sb.AppendLine("DefaultBrowserManager.exe [option] [url]");
+                        sb.AppendLine("DefaultBrowserManager.exe [option] [option params] [url]");
                         sb.AppendLine();
                         sb.AppendLine("Options:");
                         sb.AppendLine("-c, --config Opens configuration window");
